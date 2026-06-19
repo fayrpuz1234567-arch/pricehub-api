@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم PriceHub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1a73e8, #0d47a1);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .header .badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            text-align: center;
+        }
+
+        .stat-card .number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1a73e8;
+        }
+
+        .stat-card .label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Form */
+        .form-card {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+
+        .form-card h2 {
+            margin-bottom: 20px;
+            color: #1a73e8;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1a73e8;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #1a73e8;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0d47a1;
+        }
+
+        .btn-danger {
+            background: #d32f2f;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b71c1c;
+        }
+
+        .btn-success {
+            background: #2e7d32;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #1b5e20;
+        }
+
+        .btn-warning {
+            background: #f57c00;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #e65100;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        /* Products Table */
+        .table-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .table-header input {
+            padding: 8px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            width: 250px;
+            font-size: 14px;
+        }
+
+        .table-header input:focus {
+            outline: none;
+            border-color: #1a73e8;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            text-align: right;
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+            vertical-align: middle;
+        }
+
+        td img {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .product-name {
+            font-weight: 600;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-badge.in-stock {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-badge.out-of-stock {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 15px 25px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 999;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            background: #2e7d32;
+        }
+
+        .toast.error {
+            background: #c62828;
+        }
+
+        .toast.info {
+            background: #1a73e8;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .table-header {
+                flex-direction: column;
+            }
+
+            .table-header input {
+                width: 100%;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th,
+            td {
+                padding: 8px 10px;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .btn-sm {
+                width: 100%;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1>📦 لوحة تحكم PriceHub</h1>
+                <span style="font-size:14px; opacity:0.8;">إدارة المنتجات بكل سهولة</span>
+            </div>
+            <div>
+                <span class="badge" id="apiStatus">🟢 API متصل</span>
+                <span class="badge" id="productCount">0 منتج</span>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="number" id="totalProducts">0</div>
+                <div class="label">إجمالي المنتجات</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="inStockCount">0</div>
+                <div class="label">متوفر</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="outOfStockCount">0</div>
+                <div class="label">غير متوفر</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="offerCount">0</div>
+                <div class="label">عروض</div>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <div class="form-card">
+            <h2 id="formTitle">➕ إضافة منتج جديد</h2>
+            <form id="productForm">
+                <input type="hidden" id="editId">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>اسم المنتج *</label>
+                        <input type="text" id="name" placeholder="مثال: iPhone 15 Pro Max" required>
+                    </div>
+                    <div class="form-group">
+                        <label>السعر (EGP) *</label>
+                        <input type="number" id="price" placeholder="مثال: 59999" required>
+                    </div>
+                    <div class="form-group">
+                        <label>السعر القديم (اختياري)</label>
+                        <input type="number" id="oldPrice" placeholder="مثال: 64999">
+                    </div>
+                    <div class="form-group">
+                        <label>نسبة الخصم % (اختياري)</label>
+                        <input type="number" id="discount" placeholder="مثال: 7.7">
+                    </div>
+                    <div class="form-group">
+                        <label>التصنيف *</label>
+                        <select id="category">
+                            <option value="Electronics">Electronics</option>
+                            <option value="Fashion">Fashion</option>
+                            <option value="Supermarket">Supermarket</option>
+                            <option value="Home & Living">Home & Living</option>
+                            <option value="Health & Beauty">Health & Beauty</option>
+                            <option value="Sports">Sports</option>
+                            <option value="Books">Books</option>
+                            <option value="Toys">Toys</option>
+                            <option value="Pet Supplies">Pet Supplies</option>
+                            <option value="Automotive">Automotive</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>اسم المتجر *</label>
+                        <input type="text" id="storeName" placeholder="مثال: Apple Store" required>
+                    </div>
+                    <div class="form-group">
+                        <label>الكمية *</label>
+                        <input type="number" id="stock" placeholder="مثال: 45" required>
+                    </div>
+                    <div class="form-group">
+                        <label>رابط الصورة *</label>
+                        <input type="url" id="image" placeholder="https://example.com/image.jpg" required>
+                    </div>
+                    <div class="form-group" style="grid-column: span 1;">
+                        <label>الوصف *</label>
+                        <textarea id="description" placeholder="وصف المنتج..." required></textarea>
+                    </div>
+                    <div class="form-group" style="grid-column: span 1;">
+                        <label>رقم واتساب (اختياري)</label>
+                        <input type="text" id="whatsapp" placeholder="مثال: 01012345678">
+                    </div>
+                    <div class="form-group" style="grid-column: span 1;">
+                        <label>فيسبوك (اختياري)</label>
+                        <input type="url" id="facebook" placeholder="https://facebook.com/page">
+                    </div>
+                    <div class="form-group" style="grid-column: span 1;">
+                        <label>بريد تواصل (اختياري)</label>
+                        <input type="email" id="contactEmail" placeholder="store@example.com">
+                    </div>
+                </div>
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-primary" id="submitBtn">➕ إضافة المنتج</button>
+                    <button type="button" class="btn btn-warning" id="cancelBtn" style="display:none;">❌ إلغاء التعديل</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Products Table -->
+        <div class="table-container">
+            <div class="table-header">
+                <h2>📋 قائمة المنتجات</h2>
+                <input type="text" id="searchInput" placeholder="🔍 بحث عن منتج..." oninput="searchProducts()">
+            </div>
+            <div id="productsTable">
+                <div class="loading">⏳ جاري التحميل...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ─── API URL ──────────────────────────────────────────────
+        const API_URL = 'https://pricehub-api-production.up.railway.app';
+
+        // ─── State ──────────────────────────────────────────────────
+        let products = [];
+        let isEditing = false;
+
+        // ─── DOM Elements ──────────────────────────────────────────
+        const form = document.getElementById('productForm');
+        const editId = document.getElementById('editId');
+        const name = document.getElementById('name');
+        const price = document.getElementById('price');
+        const oldPrice = document.getElementById('oldPrice');
+        const discount = document.getElementById('discount');
+        const category = document.getElementById('category');
+        const storeName = document.getElementById('storeName');
+        const stock = document.getElementById('stock');
+        const image = document.getElementById('image');
+        const description = document.getElementById('description');
+        const whatsapp = document.getElementById('whatsapp');
+        const facebook = document.getElementById('facebook');
+        const contactEmail = document.getElementById('contactEmail');
+        const submitBtn = document.getElementById('submitBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const formTitle = document.getElementById('formTitle');
+        const searchInput = document.getElementById('searchInput');
+
+        // ─── Toast ──────────────────────────────────────────────────
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ─── Load Products ─────────────────────────────────────────
+        async function loadProducts() {
+            try {
+                const res = await fetch(`${API_URL}/products`);
+                const data = await res.json();
+                products = data.data || [];
+                renderStats();
+                renderTable(products);
+                document.getElementById('apiStatus').textContent = '🟢 API متصل';
+            } catch (error) {
+                console.error('Error loading products:', error);
+                document.getElementById('productsTable').innerHTML =
+                    `<div class="empty">❌ فشل تحميل المنتجات: ${error.message}</div>`;
+                document.getElementById('apiStatus').textContent = '🔴 API غير متصل';
+            }
+        }
+
+        // ─── Stats ──────────────────────────────────────────────────
+        function renderStats() {
+            const total = products.length;
+            const inStock = products.filter(p => p.stock > 0).length;
+            const outOfStock = products.filter(p => p.stock <= 0).length;
+            const offers = products.filter(p => p.discountPercentage && p.discountPercentage > 0).length;
+
+            document.getElementById('totalProducts').textContent = total;
+            document.getElementById('inStockCount').textContent = inStock;
+            document.getElementById('outOfStockCount').textContent = outOfStock;
+            document.getElementById('offerCount').textContent = offers;
+            document.getElementById('productCount').textContent = `${total} منتج`;
+        }
+
+        // ─── Render Table ──────────────────────────────────────────
+        function renderTable(data) {
+            const container = document.getElementById('productsTable');
+
+            if (!data || data.length === 0) {
+                container.innerHTML = `<div class="empty">📭 لا توجد منتجات</div>`;
+                return;
+            }
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>الصورة</th>
+                            <th>المنتج</th>
+                            <th>المتجر</th>
+                            <th>السعر</th>
+                            <th>الخصم</th>
+                            <th>الكمية</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            data.forEach(p => {
+                const isInStock = p.stock > 0;
+                const discountText = p.discountPercentage ? `${p.discountPercentage}%` : '-';
+                html += `
+                    <tr>
+                        <td><img src="${p.image || 'https://via.placeholder.com/40'}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/40'"></td>
+                        <td class="product-name">${p.name}</td>
+                        <td>${p.storeName || '-'}</td>
+                        <td>${p.price} EGP</td>
+                        <td>${discountText}</td>
+                        <td>
+                            <span class="status-badge ${isInStock ? 'in-stock' : 'out-of-stock'}">
+                                ${isInStock ? `✅ ${p.stock}` : '❌ غير متوفر'}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="actions">
+                                <button class="btn btn-primary btn-sm" onclick="editProduct(${p.id})">✏️ تعديل</button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})">🗑️ حذف</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // ─── Search ─────────────────────────────────────────────────
+        function searchProducts() {
+            const query = searchInput.value.toLowerCase();
+            if (!query.trim()) {
+                renderTable(products);
+                return;
+            }
+            const filtered = products.filter(p =>
+                p.name.toLowerCase().includes(query) ||
+                (p.storeName && p.storeName.toLowerCase().includes(query))
+            );
+            renderTable(filtered);
+        }
+
+        // ─── Add / Edit Product ────────────────────────────────────
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const productData = {
+                name: name.value.trim(),
+                price: parseFloat(price.value),
+                oldPrice: oldPrice.value ? parseFloat(oldPrice.value) : null,
+                discountPercentage: discount.value ? parseFloat(discount.value) : 0,
+                category: category.value,
+                storeName: storeName.value.trim(),
+                stock: parseInt(stock.value),
+                image: image.value.trim(),
+                description: description.value.trim(),
+                whatsapp_number: whatsapp.value.trim() || null,
+                facebook_page: facebook.value.trim() || null,
+                contact_email: contactEmail.value.trim() || null,
+                rating: 0,
+                reviewCount: 0,
+                isTrending: false,
+                isBestSeller: false,
+                isOffer: false,
+                currency: 'EGP',
+                subCategory: ''
+            };
+
+            try {
+                let res;
+
+                if (isEditing) {
+                    // UPDATE
+                    const id = parseInt(editId.value);
+                    res = await fetch(`${API_URL}/products/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(productData)
+                    });
+
+                    if (res.ok) {
+                        showToast('✅ تم تحديث المنتج بنجاح!', 'success');
+                        resetForm();
+                        loadProducts();
+                    } else {
+                        const err = await res.json();
+                        showToast(`❌ فشل التحديث: ${err.error}`, 'error');
+                    }
+                } else {
+                    // ADD
+                    productData.id = Date.now();
+                    res = await fetch(`${API_URL}/products`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(productData)
+                    });
+
+                    if (res.ok) {
+                        showToast('✅ تم إضافة المنتج بنجاح!', 'success');
+                        resetForm();
+                        loadProducts();
+                    } else {
+                        const err = await res.json();
+                        showToast(`❌ فشل الإضافة: ${err.error}`, 'error');
+                    }
+                }
+            } catch (error) {
+                showToast(`❌ خطأ: ${error.message}`, 'error');
+            }
+        });
+
+        // ─── Edit Product ──────────────────────────────────────────
+        function editProduct(id) {
+            const product = products.find(p => p.id === id);
+            if (!product) return;
+
+            isEditing = true;
+            editId.value = product.id;
+            name.value = product.name;
+            price.value = product.price;
+            oldPrice.value = product.oldPrice || '';
+            discount.value = product.discountPercentage || '';
+            category.value = product.category || 'Electronics';
+            storeName.value = product.storeName || '';
+            stock.value = product.stock;
+            image.value = product.image || '';
+            description.value = product.description || '';
+            whatsapp.value = product.whatsapp_number || '';
+            facebook.value = product.facebook_page || '';
+            contactEmail.value = product.contact_email || '';
+
+            formTitle.textContent = '✏️ تعديل المنتج';
+            submitBtn.textContent = '💾 حفظ التعديلات';
+            cancelBtn.style.display = 'inline-block';
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ─── Cancel Edit ──────────────────────────────────────────
+        cancelBtn.addEventListener('click', resetForm);
+
+        function resetForm() {
+            isEditing = false;
+            form.reset();
+            editId.value = '';
+            formTitle.textContent = '➕ إضافة منتج جديد';
+            submitBtn.textContent = '➕ إضافة المنتج';
+            cancelBtn.style.display = 'none';
+        }
+
+        // ─── Delete Product ────────────────────────────────────────
+        async function deleteProduct(id) {
+            if (!confirm('⚠️ هل أنت متأكد من حذف هذا المنتج؟')) return;
+
+            try {
+                const res = await fetch(`${API_URL}/products/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (res.ok) {
+                    showToast('🗑️ تم حذف المنتج', 'info');
+                    loadProducts();
+                } else {
+                    const err = await res.json();
+                    showToast(`❌ فشل الحذف: ${err.error}`, 'error');
+                }
+            } catch (error) {
+                showToast(`❌ خطأ: ${error.message}`, 'error');
+            }
+        }
+
+        // ─── Init ───────────────────────────────────────────────────
+        loadProducts();
+
+        // ─── Auto-refresh every 30 seconds ────────────────────────
+        setInterval(loadProducts, 30000);
+    </script>
+</body>
+</html>

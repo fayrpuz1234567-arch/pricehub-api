@@ -672,6 +672,46 @@ app.get("/stores", (req, res) => {
   res.json({ data: stores, total: stores.length });
 });
 
+// ─── CRUD Operations (New) ──────────────────────────────────────
+
+// POST: Add new product
+app.post("/products", (req, res) => {
+    const newProduct = {
+        id: Date.now(),
+        ...req.body,
+        rating: req.body.rating || 0,
+        reviewCount: req.body.reviewCount || 0,
+        isTrending: req.body.isTrending || false,
+        isBestSeller: req.body.isBestSeller || false,
+        isOffer: req.body.isOffer || false,
+        currency: req.body.currency || 'EGP',
+    };
+    products.push(newProduct);
+    res.json({ message: "Product added successfully", data: newProduct });
+});
+
+// PUT: Update product
+app.put("/products/:id", (req, res) => {
+    const id = parseInt(req.params.id);
+    const index = products.findIndex(p => p.id === id);
+    if (index === -1) {
+        return res.status(404).json({ error: "Product not found" });
+    }
+    products[index] = { ...products[index], ...req.body };
+    res.json({ message: "Product updated successfully", data: products[index] });
+});
+
+// DELETE: Delete product
+app.delete("/products/:id", (req, res) => {
+    const id = parseInt(req.params.id);
+    const index = products.findIndex(p => p.id === id);
+    if (index === -1) {
+        return res.status(404).json({ error: "Product not found" });
+    }
+    products.splice(index, 1);
+    res.json({ message: "Product deleted successfully" });
+});
+
 // ─── Start Server ────────────────────────────────────────────────
 
 const PORT = process.env.PORT || 3000;
