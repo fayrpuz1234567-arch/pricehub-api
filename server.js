@@ -6,6 +6,19 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// ─── CSP Headers ────────────────────────────────────────────────
+app.use((req, res, next) => {
+    res.setHeader('Content-Security-Policy', 
+        "default-src 'self'; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+        "style-src 'self' 'unsafe-inline'; " +
+        "img-src 'self' data: https:; " +
+        "connect-src 'self' https:; " +
+        "font-src 'self' data:;"
+    );
+    next();
+});
+
 // ─────────────────────────────────────────────
 // Fake Database
 // ─────────────────────────────────────────────
@@ -672,7 +685,7 @@ app.get("/stores", (req, res) => {
   res.json({ data: stores, total: stores.length });
 });
 
-// ─── CRUD Operations (New) ──────────────────────────────────────
+// ─── CRUD Operations ─────────────────────────────────────────────
 
 // POST: Add new product
 app.post("/products", (req, res) => {
