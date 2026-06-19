@@ -4,6 +4,7 @@ const API_URL = 'https://pricehub-api-production.up.railway.app';
 // ─── State ──────────────────────────────────────────────────
 let products = [];
 let isEditing = false;
+let isLoadingProducts = false;
 
 // ─── DOM Elements ──────────────────────────────────────────
 const form = document.getElementById('productForm');
@@ -38,18 +39,33 @@ function showToast(message, type = 'success') {
 
 // ─── Load Products ─────────────────────────────────────────
 async function loadProducts() {
+    // ✅ منع التحميل المتكرر
+    if (isLoadingProducts) return;
+    isLoadingProducts = true;
+
     try {
-        const res = await fetch(`${API_URL}/products`);
+        // ✅ منع الـ Cache عشان يجيب أحدث البيانات
+        const res = await fetch(`${API_URL}/products`, {
+            cache: 'no-cache',
+            headers: {
+                'Cache-Control': 'no-cache'
+            }
+        });
         const data = await res.json();
         products = data.data || [];
+        
+        // ✅ تحديث الإحصائيات والجدول
         renderStats();
         renderTable(products);
+        
         document.getElementById('apiStatus').textContent = '🟢 API متصل';
     } catch (error) {
         console.error('Error loading products:', error);
         document.getElementById('productsTable').innerHTML =
             `<div class="empty">❌ فشل تحميل المنتجات: ${error.message}</div>`;
         document.getElementById('apiStatus').textContent = '🔴 API غير متصل';
+    } finally {
+        isLoadingProducts = false;
     }
 }
 
@@ -67,7 +83,7 @@ function renderStats() {
     document.getElementById('productCount').textContent = `${total} منتج`;
 }
 
-// ─── Render Table ──────────────────────────────────────────
+// ─── Render Table (محسّن بدون اهتزاز) ─────────────────────
 function renderTable(data) {
     const container = document.getElementById('productsTable');
 
@@ -76,53 +92,59 @@ function renderTable(data) {
         return;
     }
 
-    let html = `
-        <table>
-            <thead>
-                <tr>
-                    <th>الصورة</th>
-                    <th>المنتج</th>
-                    <th>المتجر</th>
-                    <th>السعر</th>
-                    <th>الخصم</th>
-                    <th>الكمية</th>
-                    <th>الإجراءات</th>
-                </tr>
-            </thead>
-            <tbody>
+    // ✅ استخدم DocumentFragment عشان التحديث يكون سلس
+    const fragment = document.createDocumentFragment();
+    const table = document.createElement('table');
+    
+    // ─── Header ──────────────────────────────────────────────
+    const thead = document.createElement('thead');
+    thead.innerHTML = `
+        <tr>
+            <th>الصورة</th>
+            <th>المنتج</th>
+            <th>المتجر</th>
+            <th>السعر</th>
+            <th>الخصم</th>
+            <th>الكمية</th>
+            <th>الإجراءات</th>
+        </tr>
     `;
-
+    table.appendChild(thead);
+    
+    // ─── Body ────────────────────────────────────────────────
+    const tbody = document.createElement('tbody');
+    
     data.forEach(p => {
         const isInStock = p.stock > 0;
         const discountText = p.discountPercentage ? `${p.discountPercentage}%` : '-';
-        html += `
-            <tr>
-                <td><img src="${p.image || 'https://via.placeholder.com/40'}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/40'"></td>
-                <td class="product-name">${p.name}</td>
-                <td>${p.storeName || '-'}</td>
-                <td>${p.price} EGP</td>
-                <td>${discountText}</td>
-                <td>
-                    <span class="status-badge ${isInStock ? 'in-stock' : 'out-of-stock'}">
-                        ${isInStock ? `✅ ${p.stock}` : '❌ غير متوفر'}
-                    </span>
-                </td>
-                <td>
-                    <div class="actions">
-                        <button class="btn btn-primary btn-sm" onclick="editProduct(${p.id})">✏️ تعديل</button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})">🗑️ حذف</button>
-                    </div>
-                </td>
-            </tr>
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><img src="${p.image || 'https://via.placeholder.com/40'}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/40'"></td>
+            <td class="product-name">${p.name}</td>
+            <td>${p.storeName || '-'}</td>
+            <td>${p.price} EGP</td>
+            <td>${discountText}</td>
+            <td>
+                <span class="status-badge ${isInStock ? 'in-stock' : 'out-of-stock'}">
+                    ${isInStock ? `✅ ${p.stock}` : '❌ غير متوفر'}
+                </span>
+            </td>
+            <td>
+                <div class="actions">
+                    <button class="btn btn-primary btn-sm" onclick="editProduct(${p.id})">✏️ تعديل</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})">🗑️ حذف</button>
+                </div>
+            </td>
         `;
+        tbody.appendChild(tr);
     });
-
-    html += `
-            </tbody>
-        </table>
-    `;
-
-    container.innerHTML = html;
+    
+    table.appendChild(tbody);
+    fragment.appendChild(table);
+    
+    // ✅ استبدال المحتوى مرة واحدة فقط
+    container.innerHTML = '';
+    container.appendChild(fragment);
 }
 
 // ─── Search ─────────────────────────────────────────────────
@@ -179,7 +201,7 @@ form.addEventListener('submit', async (e) => {
             if (res.ok) {
                 showToast('✅ تم تحديث المنتج بنجاح!', 'success');
                 resetForm();
-                loadProducts();
+                await loadProducts(); // ✅ Force reload مع await
             } else {
                 const err = await res.json();
                 showToast(`❌ فشل التحديث: ${err.error}`, 'error');
@@ -195,7 +217,7 @@ form.addEventListener('submit', async (e) => {
             if (res.ok) {
                 showToast('✅ تم إضافة المنتج بنجاح!', 'success');
                 resetForm();
-                loadProducts();
+                await loadProducts(); // ✅ Force reload مع await
             } else {
                 const err = await res.json();
                 showToast(`❌ فشل الإضافة: ${err.error}`, 'error');
@@ -256,7 +278,7 @@ async function deleteProduct(id) {
 
         if (res.ok) {
             showToast('🗑️ تم حذف المنتج', 'info');
-            loadProducts();
+            await loadProducts(); // ✅ Force reload مع await
         } else {
             const err = await res.json();
             showToast(`❌ فشل الحذف: ${err.error}`, 'error');
@@ -269,5 +291,5 @@ async function deleteProduct(id) {
 // ─── Init ───────────────────────────────────────────────────
 loadProducts();
 
-// ─── Auto-refresh every 30 seconds ────────────────────────
-setInterval(loadProducts, 30000);
+// ─── Auto-refresh every 60 seconds (أقل اهتزاز) ──────────
+setInterval(loadProducts, 60000);
