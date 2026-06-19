@@ -640,6 +640,11 @@ const categories = [
 // ─── Products Endpoints ──────────────────────────────────────────
 
 app.get("/products", (req, res) => {
+  // ✅ لو مفيش page أو limit متبعتين، رجّع كل المنتجات (عشان لوحة التحكم تشوفهم كلهم)
+  if (!req.query.page && !req.query.limit) {
+    return res.json({ data: products, total: products.length });
+  }
+
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 20;
   const start = (page - 1) * limit;

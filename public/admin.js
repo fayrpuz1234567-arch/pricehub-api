@@ -55,7 +55,7 @@ async function loadProducts() {
         products = data.data || [];
         
         // ✅ تحديث الإحصائيات والجدول
-        renderStats();
+        renderStats(data.total);
         renderTable(products);
         
         document.getElementById('apiStatus').textContent = '🟢 API متصل';
@@ -70,8 +70,8 @@ async function loadProducts() {
 }
 
 // ─── Stats ──────────────────────────────────────────────────
-function renderStats() {
-    const total = products.length;
+function renderStats(totalFromApi) {
+    const total = totalFromApi ?? products.length;
     const inStock = products.filter(p => p.stock > 0).length;
     const outOfStock = products.filter(p => p.stock <= 0).length;
     const offers = products.filter(p => p.discountPercentage && p.discountPercentage > 0).length;
