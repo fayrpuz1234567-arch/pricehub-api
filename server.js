@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 
 const app = express();
 
@@ -17,6 +18,14 @@ app.use((req, res, next) => {
         "font-src 'self' data:;"
     );
     next();
+});
+
+// ─── Serve static files ────────────────────────────────────────
+app.use(express.static(path.join(__dirname, "public")));
+
+// ─── Serve admin.html as default ──────────────────────────────
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "admin.html"));
 });
 
 // ─────────────────────────────────────────────
