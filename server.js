@@ -696,20 +696,43 @@ app.get("/stores", (req, res) => {
 
 // ─── CRUD Operations ─────────────────────────────────────────────
 
-// POST: Add new product
+// POST: Add new product (محسّن)
 app.post("/products", (req, res) => {
+    console.log("📦 Received POST request to /products");
+    console.log("📦 Request body:", req.body);
+    
     const newProduct = {
         id: Date.now(),
-        ...req.body,
-        rating: req.body.rating || 0,
-        reviewCount: req.body.reviewCount || 0,
+        name: req.body.name || "Unknown Product",
+        description: req.body.description || "",
+        image: req.body.image || "",
+        price: parseFloat(req.body.price) || 0,
+        oldPrice: req.body.oldPrice ? parseFloat(req.body.oldPrice) : null,
+        discountPercentage: req.body.discountPercentage ? parseFloat(req.body.discountPercentage) : 0,
+        category: req.body.category || "Uncategorized",
+        subCategory: req.body.subCategory || "",
+        storeName: req.body.storeName || "Unknown Store",
+        rating: parseFloat(req.body.rating) || 0,
+        reviewCount: parseInt(req.body.reviewCount) || 0,
+        stock: parseInt(req.body.stock) || 0,
+        currency: req.body.currency || 'EGP',
         isTrending: req.body.isTrending || false,
         isBestSeller: req.body.isBestSeller || false,
         isOffer: req.body.isOffer || false,
-        currency: req.body.currency || 'EGP',
+        whatsapp_number: req.body.whatsapp_number || null,
+        facebook_page: req.body.facebook_page || null,
+        contact_email: req.body.contact_email || null,
+        createdAt: new Date().toISOString(),
     };
+    
     products.push(newProduct);
-    res.json({ message: "Product added successfully", data: newProduct });
+    console.log("✅ Product added successfully:", newProduct);
+    console.log("📊 Total products:", products.length);
+    
+    res.status(201).json({ 
+        message: "Product added successfully", 
+        data: newProduct 
+    });
 });
 
 // PUT: Update product
