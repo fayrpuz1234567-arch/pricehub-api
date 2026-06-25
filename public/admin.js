@@ -339,6 +339,3 @@ async function deleteProduct(id) {
 
 // ─── Init ───────────────────────────────────────────────────
 loadProducts();
-
-// ─── Auto-refresh every 60 seconds ────────────────────────
-setInterval(loadProducts, 60000);
