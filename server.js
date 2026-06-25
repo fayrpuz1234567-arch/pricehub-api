@@ -14,18 +14,25 @@ const Category = require('./models/Category');
 
 const app = express();
 
-app.use(cors());
+// ─── CORS (يسمح بكل الميثودز: GET/POST/PUT/DELETE/OPTIONS) ──────
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
 app.use(express.json());
 
-// ─── CSP Headers ────────────────────────────────────────────────
+// ─── CSP Headers (يسمح بـ Firebase scripts و connections) ───────
 app.use((req, res, next) => {
     res.setHeader('Content-Security-Policy',
         "default-src 'self'; " +
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://*.firebaseio.com; " +
         "style-src 'self' 'unsafe-inline'; " +
         "img-src 'self' data: https:; " +
-        "connect-src 'self' https:; " +
-        "font-src 'self' data:;"
+        "connect-src 'self' https: wss://*.firebaseio.com https://*.googleapis.com; " +
+        "font-src 'self' data:; " +
+        "frame-src 'self' https://*.firebaseapp.com;"
     );
     next();
 });
