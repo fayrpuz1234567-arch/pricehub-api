@@ -109,27 +109,77 @@ function renderTable(data) {
     data.forEach(p => {
         // ✅ استخدم _id دائماً (MongoDB ObjectId)
         const productId = p._id;
+
+        if (!productId) {
+            console.warn('منتج بدون _id:', p);
+            return;
+        }
+
         const isInStock = p.stock > 0;
         const discountText = p.discountPercentage ? `${p.discountPercentage}%` : '-';
+
         const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td><img src="${p.image || 'https://via.placeholder.com/40'}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/40'" crossorigin="anonymous"></td>
-            <td class="product-name">${p.name}</td>
-            <td>${p.storeName || '-'}</td>
-            <td>${p.price} EGP</td>
-            <td>${discountText}</td>
-            <td>
-                <span class="status-badge ${isInStock ? 'in-stock' : 'out-of-stock'}">
-                    ${isInStock ? `✅ ${p.stock}` : '❌ غير متوفر'}
-                </span>
-            </td>
-            <td>
-                <div class="actions">
-                    <button class="btn btn-primary btn-sm" onclick="editProduct('${productId}')">✏️ تعديل</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteProduct('${productId}')">🗑️ حذف</button>
-                </div>
-            </td>
-        `;
+
+        // ── الصورة
+        const imgTd = document.createElement('td');
+        const imgEl = document.createElement('img');
+        imgEl.src = p.image || 'https://via.placeholder.com/40';
+        imgEl.alt = p.name;
+        imgEl.crossOrigin = 'anonymous';
+        imgEl.onerror = function () { this.src = 'https://via.placeholder.com/40'; };
+        imgTd.appendChild(imgEl);
+
+        // ── اسم المنتج
+        const nameTd = document.createElement('td');
+        nameTd.className = 'product-name';
+        nameTd.textContent = p.name;
+
+        // ── المتجر
+        const storeTd = document.createElement('td');
+        storeTd.textContent = p.storeName || '-';
+
+        // ── السعر
+        const priceTd = document.createElement('td');
+        priceTd.textContent = `${p.price} EGP`;
+
+        // ── الخصم
+        const discountTd = document.createElement('td');
+        discountTd.textContent = discountText;
+
+        // ── الكمية
+        const stockTd = document.createElement('td');
+        const badge = document.createElement('span');
+        badge.className = `status-badge ${isInStock ? 'in-stock' : 'out-of-stock'}`;
+        badge.textContent = isInStock ? `✅ ${p.stock}` : '❌ غير متوفر';
+        stockTd.appendChild(badge);
+
+        // ── الإجراءات (event listeners بدل onclick inline)
+        const actionsTd = document.createElement('td');
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'actions';
+
+        const editBtn = document.createElement('button');
+        editBtn.className = 'btn btn-primary btn-sm';
+        editBtn.textContent = '✏️ تعديل';
+        editBtn.addEventListener('click', () => editProduct(productId));
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'btn btn-danger btn-sm';
+        deleteBtn.textContent = '🗑️ حذف';
+        deleteBtn.addEventListener('click', () => deleteProduct(productId));
+
+        actionsDiv.appendChild(editBtn);
+        actionsDiv.appendChild(deleteBtn);
+        actionsTd.appendChild(actionsDiv);
+
+        tr.appendChild(imgTd);
+        tr.appendChild(nameTd);
+        tr.appendChild(storeTd);
+        tr.appendChild(priceTd);
+        tr.appendChild(discountTd);
+        tr.appendChild(stockTd);
+        tr.appendChild(actionsTd);
+
         tbody.appendChild(tr);
     });
 
@@ -224,7 +274,7 @@ form.addEventListener('submit', async (e) => {
 
 // ─── Edit Product ──────────────────────────────────────────
 function editProduct(id) {
-    // ✅ ابحث بـ _id مش id
+    // ✅ ابحث بـ _id
     const product = products.find(p => p._id === id);
     if (!product) {
         showToast('❌ لم يتم العثور على المنتج', 'error');
